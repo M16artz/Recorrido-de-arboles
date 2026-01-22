@@ -14,120 +14,120 @@ import model.BinaryNode;
  */
 public class TreeManager {
 
-    public static BinaryNode leerYGenerarArbol(String rutaArchivo) throws Exception {
+    public static BinaryNode readAndCreateTree(String filePath) throws Exception {
         // Mapas para guardar los nodos y sus conexiones temporalmente
         // Mapa: ID -> Objeto Nodo
-        Map<Integer, BinaryNode> mapaNodos = new HashMap<>();
+        Map<Integer, BinaryNode> nodeMap = new HashMap<>();
         // Mapa: ID -> Arreglo de enteros {idIzquierdo, idDerecho}
-        Map<Integer, int[]> mapaConexiones = new HashMap<>();
+        Map<Integer, int[]> conectionsMap = new HashMap<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
-            String linea = br.readLine();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line = br.readLine();
 
-            if (linea == null) {
+            if (line == null) {
                 throw new Exception("El archivo está vacío.");
             }
 
             // --- VALIDACIÓN 1: El Encabezado ---
-            int cantidadEsperada;
+            int expectedNodes;
             try {
-                cantidadEsperada = Integer.parseInt(linea.trim());
+                expectedNodes = Integer.parseInt(line.trim());
             } catch (NumberFormatException e) {
                 throw new Exception("La primera línea debe ser un número entero que indique la cantidad de nodos.");
             }
 
-            int lineasLeidas = 0;
+            int readedLines = 0;
 
             // --- LECTURA DE NODOS ---
-            while ((linea = br.readLine()) != null) {
-                linea = linea.trim();
-                if (linea.isEmpty()) {
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) {
                     continue; // Saltar líneas vacías si las hay
                 }
-                String[] partes = linea.split(";");
+                String[] parts = line.split(";");
 
                 // --- VALIDACIÓN 2: Formato de línea ---
-                if (partes.length != 4) {
-                    throw new Exception("Formato incorrecto en línea: " + linea + ". Se esperaban 4 elementos.");
+                if (parts.length != 4) {
+                    throw new Exception("Formato incorrecto en línea: " + line + ". Se esperaban 4 elementos.");
                 }
 
                 try {
-                    int id = Integer.parseInt(partes[0]);
-                    int valor = Integer.parseInt(partes[1]);
-                    int izq = Integer.parseInt(partes[2]);
-                    int der = Integer.parseInt(partes[3]);
+                    int id = Integer.parseInt(parts[0]);
+                    int value = Integer.parseInt(parts[1]);
+                    int left = Integer.parseInt(parts[2]);
+                    int right = Integer.parseInt(parts[3]);
 
                     // Crear nodo y guardar referencia
-                    if (mapaNodos.containsKey(id)) {
+                    if (nodeMap.containsKey(id)) {
                         throw new Exception("ID de nodo duplicado encontrado: " + id);
                     }
 
-                    BinaryNode nuevoNodo = new BinaryNode(id, valor);
-                    mapaNodos.put(id, nuevoNodo);
+                    BinaryNode newNode = new BinaryNode(id, value);
+                    nodeMap.put(id, newNode);
 
                     // Guardar conexiones para procesar después
-                    mapaConexiones.put(id, new int[]{izq, der});
-                    lineasLeidas++;
+                    conectionsMap.put(id, new int[]{left, right});
+                    readedLines++;
 
                 } catch (NumberFormatException e) {
-                    throw new Exception("Los datos del nodo deben ser números enteros. Error en: " + linea);
+                    throw new Exception("Los datos del nodo deben ser números enteros. Error en: " + line);
                 }
             }
 
             // --- VALIDACIÓN 3: Cantidad de Nodos ---
-            if (lineasLeidas != cantidadEsperada) {
-                throw new Exception("El archivo declara " + cantidadEsperada + " nodos, pero se encontraron " + lineasLeidas + " definiciones.");
+            if (readedLines != expectedNodes) {
+                throw new Exception("El archivo declara " + expectedNodes + " nodos, pero se encontraron " + readedLines + " definiciones.");
             }
         }
 
         // --- CONSTRUCCIÓN DEL ÁRBOL (Enlazado) ---
-        Set<Integer> hijos = new HashSet<>(); // Para rastrear quién es hijo de alguien
+        Set<Integer> sons = new HashSet<>(); // Para rastrear quién es hijo de alguien
 
-        for (Map.Entry<Integer, int[]> entrada : mapaConexiones.entrySet()) {
-            int idPadre = entrada.getKey();
-            int idIzq = entrada.getValue()[0];
-            int idDer = entrada.getValue()[1];
+        for (Map.Entry<Integer, int[]> entry : conectionsMap.entrySet()) {
+            int idParent = entry.getKey();
+            int idLeft = entry.getValue()[0];
+            int idRight = entry.getValue()[1];
 
-            BinaryNode padre = mapaNodos.get(idPadre);
+            BinaryNode parent = nodeMap.get(idParent);
 
             // Enlazar Izquierdo
-            if (idIzq != -1) {
-                if (!mapaNodos.containsKey(idIzq)) {
-                    throw new Exception("El nodo " + idPadre + " apunta a un hijo izquierdo " + idIzq + " que no está definido en el archivo.");
+            if (idLeft != -1) {
+                if (!nodeMap.containsKey(idLeft)) {
+                    throw new Exception("El nodo " + idParent + " apunta a un hijo izquierdo " + idLeft + " que no está definido en el archivo.");
                 }
-                padre.setLeft(mapaNodos.get(idIzq));
-                hijos.add(idIzq);
+                parent.setLeft(nodeMap.get(idLeft));
+                sons.add(idLeft);
             }
 
             // Enlazar Derecho
-            if (idDer != -1) {
-                if (!mapaNodos.containsKey(idDer)) {
-                    throw new Exception("El nodo " + idPadre + " apunta a un hijo derecho " + idDer + " que no está definido en el archivo.");
+            if (idRight != -1) {
+                if (!nodeMap.containsKey(idRight)) {
+                    throw new Exception("El nodo " + idParent + " apunta a un hijo derecho " + idRight + " que no está definido en el archivo.");
                 }
-                padre.setRight(mapaNodos.get(idDer));
-                hijos.add(idDer);
+                parent.setRight(nodeMap.get(idRight));
+                sons.add(idRight);
             }
         }
 
         // --- IDENTIFICAR LA RAÍZ ---
         // La raíz es aquel nodo que existe en el mapa pero no está en el set de 'hijos'
-        BinaryNode raiz = null;
-        for (Integer id : mapaNodos.keySet()) {
-            if (!hijos.contains(id)) {
-                if (raiz != null) {
-                    throw new Exception("Se encontraron múltiples raíces (Árbol desconectado). IDs: " + raiz.getIndex() + " y " + id);
+        BinaryNode root = null;
+        for (Integer id : nodeMap.keySet()) {
+            if (!sons.contains(id)) {
+                if (root != null) {
+                    throw new Exception("Se encontraron múltiples raíces (Árbol desconectado). IDs: " + root.getIndex() + " y " + id);
                 }
-                raiz = mapaNodos.get(id);
+                root = nodeMap.get(id);
             }
         }
 
-        if (raiz == null && !mapaNodos.isEmpty()) {
+        if (root == null && !nodeMap.isEmpty()) {
             // Caso borde: Ciclo completo (A->B->A), se devuelve el primero arbitrariamente o error
             System.out.println("Advertencia: No se encontró una raíz clara (posible ciclo). Usando el primer nodo como raíz.");
-            return mapaNodos.values().iterator().next();
+            return nodeMap.values().iterator().next();
         }
 
-        return raiz;
+        return root;
     }
 
     // Método auxiliar para imprimir el árbol (Pre-order) y verificar que funciona

@@ -2,7 +2,7 @@ package main;
 
 import model.BinaryNode;
 import service.TraversalManager;
-import static service.TreeManager.leerYGenerarArbol;
+import static service.TreeManager.readAndCreateTree;
 
 public class Main {
 
@@ -13,7 +13,7 @@ public class Main {
         // 2. Ejecutar la lectura
         System.out.println("--- Leyendo archivo y construyendo árbol ---");
         try {
-            BinaryNode raiz = leerYGenerarArbol(RUTA_ARCHIVO);
+            BinaryNode raiz = readAndCreateTree(RUTA_ARCHIVO);
             System.out.println("ARBOL CORRECTAMENTE CREADO");
             System.out.println("PRE ORDEN");
             TraversalManager.preOrden(raiz);

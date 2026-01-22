@@ -9,49 +9,49 @@ import model.BinaryNode;
  * @author MikelMZ : Miguel Armas
  */
 public class TraversalManager {
-public static void preOrden(BinaryNode nodo) {
-        if (nodo == null) {
+public static void preOrden(BinaryNode node) {
+        if (node == null) {
             return;
         }
         
         // 1. Procesar la raíz
-        System.out.print(nodo.getValue() + " "); 
+        System.out.print(node.getValue() + " "); 
         // 2. Recorrer subárbol izquierdo
-        preOrden(nodo.getLeft());
+        preOrden(node.getLeft());
         // 3. Recorrer subárbol derecho
-        preOrden(nodo.getRight());
+        preOrden(node.getRight());
     }
 
     // ==========================================
     // 2. RECORRIDO INORDEN (In-order)
     // Orden: Izquierda -> Raíz -> Derecha
     // ==========================================
-    public static void inOrden(BinaryNode nodo) {
-        if (nodo == null) {
+    public static void inOrden(BinaryNode node) {
+        if (node == null) {
             return;
         }
         // 1. Recorrer subárbol izquierdo
-        inOrden(nodo.getLeft());
+        inOrden(node.getLeft());
         // 2. Procesar la raíz
-        System.out.print(nodo.getValue() + " ");
+        System.out.print(node.getValue() + " ");
         // 3. Recorrer subárbol derecho
-        inOrden(nodo.getRight());
+        inOrden(node.getRight());
     }
 
     // ==========================================
     // 3. RECORRIDO POSTORDEN (Post-order)
     // Orden: Izquierda -> Derecha -> Raíz
     // ==========================================
-    public static void postOrden(BinaryNode nodo) {
-        if (nodo == null) {
+    public static void postOrden(BinaryNode node) {
+        if (node == null) {
             return;
         }
         // 1. Recorrer subárbol izquierdo
-        postOrden(nodo.getLeft());
+        postOrden(node.getLeft());
         // 2. Recorrer subárbol derecho
-        postOrden(nodo.getRight()); 
+        postOrden(node.getRight()); 
         // 3. Procesar la raíz
-        System.out.print(nodo.getValue() + " ");
+        System.out.print(node.getValue() + " ");
     }
 
     // ==========================================
@@ -59,30 +59,30 @@ public static void preOrden(BinaryNode nodo) {
     // Orden: Nivel por nivel, de izquierda a derecha
     // Requiere una Estructura de Datos COLA (Queue)
     // ==========================================
-    public static void porAnchura(BinaryNode raiz) {
-        if (raiz == null) {
+    public static void porAnchura(BinaryNode root) {
+        if (root == null) {
             return;
         }
 
         // Usamos LinkedList porque implementa la interfaz Queue
-        Queue<BinaryNode> cola = new LinkedList<>();
-        cola.add(raiz);
+        Queue<BinaryNode> queue = new LinkedList<>();
+        queue.add(root);
 
-        while (!cola.isEmpty()) {
+        while (!queue.isEmpty()) {
             // Sacar el nodo del frente de la cola
-            BinaryNode actual = cola.poll();
+            BinaryNode actual = queue.poll();
 
             // Procesar el nodo
             System.out.print(actual.getValue() + " ");
 
             // Si tiene hijo izquierdo, agregarlo a la cola
             if (actual.getLeft() != null) {
-                cola.add(actual.getLeft());
+                queue.add(actual.getLeft());
             }
 
             // Si tiene hijo derecho, agregarlo a la cola
             if (actual.getRight() != null) {
-                cola.add(actual.getRight());
+                queue.add(actual.getRight());
             }
         }
     }
